@@ -7,19 +7,27 @@ pipeline {
     }
 
     environment {
-        NODE_VERSION = '18.17.1' // Specify the Node.js version
+        NODE_VERSION = '14' // Specify the Node.js version
     }
 
     stages {
-        stage('Install Node.js') {
+        stage('Prepare Environment') {
             steps {
-                // Install Node.js
                 script {
                     def nodeVersion = NODE_VERSION
                     sh """
-                        # Download and install Node.js
-                        curl -sL https://deb.nodesource.com/setup_$nodeVersion.x | bash -
-                        apt-get install -y nodejs
+                        # Install Node.js if not already installed
+                        if ! command -v node &> /dev/null
+                        then
+                            echo "Node.js not found, installing..."
+                            curl -sL https://deb.nodesource.com/setup_$nodeVersion.x | bash -
+                            apt-get install -y nodejs
+                        else
+                            echo "Node.js found, skipping installation."
+                        fi
+
+                        # Check Node.js version
+                        node -v
                     """
                 }
             }
@@ -51,6 +59,12 @@ pipeline {
         always {
             // Clean up the workspace
             cleanWs()
+        }
+        failure {
+            script {
+                currentBuild.result = 'FAILURE'
+                echo "Build failed. Check the logs for more details."
+            }
         }
     }
 }
