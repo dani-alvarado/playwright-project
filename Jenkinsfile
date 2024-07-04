@@ -6,33 +6,12 @@ pipeline {
         cron('H */2 * * *')
     }
 
-    environment {
-        NODE_VERSION = '14' // Specify the Node.js version
+    tools {
+        // Use the configured NodeJS installation
+        nodejs 'Node'
     }
 
     stages {
-        stage('Prepare Environment') {
-            steps {
-                script {
-                    def nodeVersion = NODE_VERSION
-                    sh """
-                        # Install Node.js if not already installed
-                        if ! command -v node &> /dev/null
-                        then
-                            echo "Node.js not found, installing..."
-                            curl -sL https://deb.nodesource.com/setup_$nodeVersion.x | bash -
-                            apt-get install -y nodejs
-                        else
-                            echo "Node.js found, skipping installation."
-                        fi
-
-                        # Check Node.js version
-                        node -v
-                    """
-                }
-            }
-        }
-
         stage('Checkout') {
             steps {
                 // Checkout the code from the repository
